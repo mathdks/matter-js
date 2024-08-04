@@ -48,6 +48,7 @@ var Axes = require('../geometry/Axes');
             position: { x: 0, y: 0 },
             force: { x: 0, y: 0 },
             torque: 0,
+            gravityScale: 1,
             positionImpulse: { x: 0, y: 0 },
             constraintImpulse: { x: 0, y: 0, angle: 0 },
             totalContacts: 0,
@@ -243,6 +244,9 @@ var Axes = require('../geometry/Axes');
                 break;
             case 'centre':
                 Body.setCentre(body, value);
+                break;
+            case 'gravityScale':
+                Body.setGravityScale(body, value);
                 break;
             default:
                 body[property] = value;
@@ -505,6 +509,16 @@ var Axes = require('../geometry/Axes');
     };
 
     /**
+     * Sets the gravity scale of the body
+     * @method setAngle
+     * @param {body} body
+     * @param {number} scale
+     */
+    Body.setGravityScale = function (body, scale) {
+        body.gravityScale = scale
+    }
+
+    /**
      * Sets the angle of the body. By default angular velocity is unchanged.
      * If `updateVelocity` is `true` then angular velocity is inferred from the change in angle.
      * @method setAngle
@@ -755,6 +769,10 @@ var Axes = require('../geometry/Axes');
             velocityPrevX = (body.position.x - body.positionPrev.x) * correction,
             velocityPrevY = (body.position.y - body.positionPrev.y) * correction;
 
+        // update velocity with Verlet integration
+        body.velocity.x = (velocityPrevX * frictionAir * correction) + (body.force.x / body.mass) * deltaTimeSquared * body.gravityScale;
+        body.velocity.y = (velocityPrevY * frictionAir * correction) + (body.force.y / body.mass) * deltaTimeSquared * body.gravityScale;
+        
         // update velocity with Verlet integration
         body.velocity.x = (velocityPrevX * frictionAir) + (body.force.x / body.mass) * deltaTimeSquared;
         body.velocity.y = (velocityPrevY * frictionAir) + (body.force.y / body.mass) * deltaTimeSquared;
